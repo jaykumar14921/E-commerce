@@ -139,9 +139,8 @@ $(function () {
       method: "GET",
       url: url,
     }).then(function (response) {
-      console.log('API Response:', response); 
       $("#card-group").empty();
-      $.each(response.data, function (key, value) {
+      $.each(response, function (key, value) {
         const card = $(`
           <div class="card" style="cursor:pointer;">
             <div align="center" class="card-header">
