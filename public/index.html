@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GroceryBucket</title>
+    
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    body {
+      background: linear-gradient(to right, rgb(2, 39, 32), 55%, rgb(11, 109, 59) 80%);
+      color: white;
+    }
+
+    header{
+      background-color:  rgb(2, 39, 32);
+      position: sticky; 
+      top: 0;
+      z-index: 1000;
+      width: 100%; 
+    }
+
+    #lp-div1 {
+      margin-top: 10%;
+    }
+
+    #btn-category button {
+      margin: 5px;
+    }
+
+    #img-category img {
+      margin: 1%;
+      border-radius: 20px;
+    }
+
+    #card-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+
+    .card {
+      width: 150px;
+      height: 300px;
+      margin: 5px;
+    }
+
+    #card-img {
+      height: 100px;
+      width: 90px;
+    }
+
+    #body-text {
+      font-size: 11px;
+    }
+
+    #title {
+      font-size: smaller;
+      font-weight: bold;
+      margin-bottom: -1px;
+    }
+
+    .card-header {
+      background-color: white;
+      padding: 0%;
+    }
+
+    .card-body {
+      height: 50px;
+      margin-bottom: -1px;
+    }
+
+    .card-footer {
+      margin-top: -1px;
+    }
+
+    #btn-add {
+      height: 25px;
+      width: 55px;
+      font-size: 14px;
+    }
+
+    .overflow-hidden-text {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #img-category img:hover{
+      cursor: pointer;
+      box-shadow: 7px 7px 7px  rgba(248, 248, 255, 0.457);
+      transform: scale(1.11);
+    }
+
+    #btnLogin a{
+      text-decoration: none;
+      color: black;
+    }
+  </style>
+
+  <script src="../node_modules/jquery/dist/jquery.js"></script>
+  
+  <script>
+
+$(function () {
+  let currentPage = 1;
+  const limit = 28;
+  let totalPages = 28; // Initialize totalPages
+
+  // CATEGORY BUTTONS
+  $("#btn-category button").on("click", function () {
+    const category = $(this).data("category") || "all";
+    const subCategory = $(this).data("sub-category") || "all";
+    currentPage = 1;
+    fetchProducts(currentPage, category, subCategory);
+  });
+
+  // IMAGE CATEGORY
+  $("#img-category img").on("click", function () {
+    const category = $(this).data("category") || "all";
+    const subCategory = $(this).data("sub-category") || "all";
+    currentPage = 1;
+    fetchProducts(currentPage, category, subCategory);
+  });
+
+
+  function fetchProducts(page,category='all') {
+    let url = `https://imposterapi-5.onrender.com/data?limit=${limit}&page=${page}`;
+    if (category !== 'all') {
+      url += `&category=${category}`; // Append category to the URL
+    }
+
+    $.ajax({
+      method: "GET",
+      url: url,
+    }).then(function (response) {
+      
+      $("#card-group").empty();
+      $.each(response.data, function (key, value) {
+        const card = $(`
+          <div class="card" style="cursor:pointer;">
+            <div align="center" class="card-header">
+              <img id="card-img" src="${value.image}" class="card-img-top">
+            </div>
+            <div class="card-body">
+              <p id="title" class="overflow-hidden-text">${value.title}</p>
+              <p id="body-text" class="ms-1">Unit: ${value.unit}</p>
+              <p id="body-text" class="ms-1">Type: ${value.type}</p>
+            </div>
+            <div class="card-footer d-flex justify-content-around">
+              &#8377;&nbsp;${value.price}
+              <button onclick="AddToCart(${value.id})" class="btn btn-outline-success">Add</button>
+            </div>
+          </div>
+        `);
+
+        card.on("click", function () {
+          $('#modalImage').attr('src', value.image);
+          $('#modalTitle').text(value.title);
+          $('#modalUnit').text("Unit: " + value.unit);
+          $('#modalType').text("Type: " + value.type);
+          $('#modalPrice').html("&#8377; " + value.price);
+          $('#modalDescription').text(value.description);
+          $('#modalFSSAI').text(value.fssaiLicense);
+          $('#modalOrigin').text(value.countryOfOrigin);
+          $('#modalShelfLife').text(value.shelfLife);
+
+          const modal = new bootstrap.Modal(document.getElementById('productModal'));
+          modal.show();
+        });
+
+        card.appendTo("#card-group");
+      });
+
+      totalPages = response.totalPages;
+      updatePaginationButtons();
+      currentPage = page;
+
+      $("#card-group")[0].scrollIntoView();//TO LOAD PRODUCTS FROM TOP AFTER PAGE CHANGE
+    });
+  }
+
+  function updatePaginationButtons() {
+    $(".pagination .page-item").removeClass("active disabled");
+    $(".pagination .page-item:nth-child(" + (currentPage + 1) + ")").addClass("active"); // +1 because of the 'Previous' button
+
+    $("#prevPage").toggleClass("disabled", currentPage === 1);
+    $("#nextPage").toggleClass("disabled", currentPage === totalPages);
+  }
+
+     // Event listener for category change
+  $("#lstOption").on("change", function () {
+    currentPage = 1; // Reset to the first page when category changes
+    fetchProducts(currentPage, $(this).val()); // Fetch products for the selected category
+  });
+
+
+  // Event listeners for pagination links
+  $(".pagination").on("click", ".page-item a", function (e) {
+    e.preventDefault();
+    const clickedPage = $(this).text();
+    if (!isNaN(clickedPage)) {
+      fetchProducts(parseInt(clickedPage));
+    } else if ($(this).attr("aria-label") === "Previous" && currentPage > 1) {
+      fetchProducts(currentPage - 1);
+    } else if ($(this).attr("aria-label") === "Next" && currentPage < totalPages) {
+      fetchProducts(currentPage + 1);
+    }
+  });
+
+  // Initial fetch
+  fetchProducts(currentPage);
+
+  // Add IDs to the 'Previous' and 'Next' buttons for easier targeting
+  $(".pagination .page-item:first-child a").attr("id", "prevPage");
+  $(".pagination .page-item:last-child a").attr("id", "nextPage");
+});
+
+
+var cartItems=[];
+var count=0;
+
+function GetCartItemsCount(){
+  count=cartItems.length;
+  let total = cartItems.reduce((sum, item) => sum + parseFloat(item.price), 0);
+  document.getElementById("totalAmount").innerHTML= ` ₹${total} X ${count}`;
+}
+
+
+function AddToCart(id){
+    fetch(`https://imposterapi-5.onrender.com/api/data/${id}`)
+    .then((response)=>{
+        return response.json();
+    })
+    .then((data)=>{
+        cartItems.push(data);
+        alert("Item Added To Cart");
+        GetCartItemsCount();
+    })
+}
+
+function bodyload(){
+  // GetCartItemsCount();
+  // AddToCart();
+}
+
+function ShowCartClick(){
+  document.querySelector("tbody").innerHTML="";
+  let totalAmount = 0;
+      for(var item of cartItems){
+        var tr=document.createElement("tr");
+        var tdImage=document.createElement("td");
+        var tdTitle=document.createElement("td");
+        var tdQuantity=document.createElement("td");
+        var tdPrice=document.createElement("td");
+
+        tdTitle.innerHTML=item.title;
+        tdPrice.innerHTML=item.price;
+        tdQuantity.innerHTML=1;
+
+        var img=document.createElement("img");
+        img.src=item.image;
+        img.width="100";
+        img.heigth="100";
+
+        tdImage.appendChild(img);
+
+ 
+
+        tr.appendChild(tdImage);
+        tr.appendChild(tdTitle);
+        tr.appendChild(tdQuantity);
+        tr.appendChild(tdPrice);
+
+        document.querySelector("tbody").appendChild(tr);
+
+        totalAmount += parseFloat(item.price);
+      }
+
+      // Add total row
+  let trTotal = document.createElement("tr");
+  trTotal.innerHTML = `
+    <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+    <td><strong>₹${totalAmount.toFixed(2)}</strong></td>
+  `;
+  tbody.appendChild(trTotal);
+}
+
+   
+  </script>
+</head>
+
+<body onload="bodyload()">
+
+  <header>
+    <div class="d-flex justify-content-between align-items-center p-3">
+      <h2>GroceryBucket</h2>
+      <div class="d-flex">
+        <button id="btnLogin" class="btn btn-warning mx-2"><i class="bi bi-person-circle"></i><a href="./login.html">&nbsp;Login</a></button>
+        <button onclick="ShowCartClick()" data-bs-target="#cart" data-bs-toggle="modal" class="btn btn-warning mx-2"><i class="bi bi-cart3"></i>&nbsp;Cart
+
+            <!-- Count -->
+          </span>
+          <span id="totalAmount" class="badge bg-success">
+            <!-- totalAmount -->
+          </span>
+        </button>
+      </div>
+    </div>
+
+   
+
+  </header>
+
+  <section>
+    <div class="d-flex justify-content-around">
+      <div id="lp-div1">
+        <div align="center" style="color: white; border-radius: 20px; background-color: rgba(255, 255, 255, 0.075); width: 200px; font-size: small;"><i class="bi bi-truck"></i>&nbsp;&nbsp;Fastest Grocery Delivery</div>
+        <div>
+          <h1 style="font-weight: bolder;">Get fresh Grocery</h1>
+          <h2 style="font-family: roboto;">Enjoy healthy life.</h2>
+        </div>
+        <div class="input-group">
+          <input class="form-control" placeholder="search" type="text">
+          <button class="btn btn-warning"><i class="bi bi-search"></i></button>
+        </div>
+        <p class="mb-0" style="color: rgba(255, 255, 255, 0.516); font-size: smaller;">Not yet Member?<a href="./signup.html">&nbsp;sign up&nbsp;</a>now</p>
+        <img src="../public/assets/4-removebg-preview.png" class="ms-5 mt-0" width="220px" height="250px" title="Hello">
+      </div>
+
+      <div class="mt-5">
+        <img src="../public/assets/grocery-banner-img.png" width="450px" alt="" />
+      </div>
+    </div>
+
+    <div id="btn-category" class="mt-5" align="center">
+      <button class="btn btn-warning px-4" data-category="fruit_veges">Fruits</button>
+      <button class="btn btn-warning px-4" data-category="atta_rice">Atta</button>
+      <button class="btn btn-warning px-4" data-category="dairy_breakfast" data-sub-category="eggs">Eggs</button>
+      <button class="btn btn-warning" data-category="drinks">Beverages</button>
+      <button class="btn btn-warning" data-category="personal_care" data-sub-category="facewash">Facewash</button>
+      <button class="btn btn-warning px-4" data-category="dairy_breakfast" data-sub-category="milk">Milk</button>
+      <button class="btn btn-warning" data-category="instant_food" data-sub-category="noodles">Noodles</button>
+      <button class="btn btn-warning" data-category="dairy_breakfast" data-sub-category="cheese">Cheese</button>
+      <button class="btn btn-warning " data-category="oil_masala" data-sub-category="oil">Dry Fruits</button>
+      <button class="btn btn-warning" data-category="dairy_breakfast" data-sub-category="paneer">Paneer</button>
+    </div>
+    
+
+    <div align="center" id="img-category">
+      <img src="../public/assets/AdobeStock_314327563_Preview.jpeg" data-category="fruit_veges" width="350px" height="180px" alt="" />
+      <img src="../public/assets/AdobeStock_335853623_Preview.jpeg" data-category="fruit_veges" data-sub-category="vegetable" width="350px" height="180px" alt="" />
+      <img src="../public/assets/download.webp" data-category="instant_food" data-sub-category="snacks" width="350px" height="180px" alt="" />
+    </div>
+
+    <div class="row">
+      <div class="col-2">
+        <h2 class="position-sticky top-0">Select a Category</h2>
+        <select id="lstOption" class="form-select dropdown m-3 position-sticky top-0">
+          <option selected value="all">All</option>
+          <option value="atta_rice">Atta&Rice</option>
+          <option value="fruit_veges">Fruits&Vegetables</option>
+          <option value="instant_food">Instant Food</option>
+          <option value="dairy_breakfast">Dairy&Breakfast</option>
+          <option value="drinks">Drinks</option>
+          <option value="oil_masala">Oil&Masala</option>
+          <option value="personal_care">Personal care</option>
+          <!-- options can be added dynamically -->
+        </select>
+      </div>
+
+      <div align="center" class="col-8">
+        <div id="card-group">
+          <!-- Product cards will be injected here -->
+        </div>
+
+        <div class="d-flex justify-content-center">
+          <nav aria-label="Page navigation example">
+            <ul class="pagination">
+              <li class="page-item">
+                <a class="page-link" href="#" aria-label="Previous">
+                  <span aria-hidden="true">&laquo;</span>
+                </a>
+              </li>
+              <li class="page-item"><a class="page-link" href="#">1</a></li>
+              <li class="page-item"><a class="page-link" href="#">2</a></li>
+              <li class="page-item"><a class="page-link" href="#">3</a></li>
+              <li class="page-item">
+                <a class="page-link" href="#" aria-label="Next">
+                  <span aria-hidden="true">&raquo;</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+
+      <div class="col-2">
+        
+      </div>
+    </div>
+
+
+  
+
+    <!-- Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-dark">
+          <div class="modal-header">
+            <h5 class="modal-title" id="productModalLabel">Product Info</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div align="center">
+              <img id="modalImage" width="300px" height="300px" class="img-fluid mb-2" />
+            </div>
+            <h5 id="modalTitle"></h5>
+            <p id="modalUnit"></p>
+            <p id="modalType"></p>
+            <p id="modalPrice" class="fw-bold"></p>
+            <p id="modalDescription"></p>
+            <p><strong>FSSAI:</strong> <span id="modalFSSAI"></span></p>
+            <p><strong>Country:</strong> <span id="modalOrigin"></span></p>
+            <div class="d-flex">
+              <p><strong>Shelf Life:</strong> <span id="modalShelfLife"></span></p>
+              <button id="btn-cart" class="btn btn-outline-success add-to-cart-button" style="margin-left: 60%;">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- CART MODAL -->
+  <div class="modal fade" id="cart">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Your Cart</h3>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Title</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+             <button class="btn btn-warning">Check Out</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+
+
+
+
+
+
+
+
+
+
+  </section>
+
+  <!-- <script src="../node_modules/jquery/dist/jquery.js"></script> -->
+  <!-- <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js" integrity="sha384-VQqxDN0EQCkWoxt/0vsQvZswzTHUVOImccYmSyhJTp7kGtPed0Qcx8rK9h9YEgx+" crossorigin="anonymous"></script>
+
+</body>
+</html>

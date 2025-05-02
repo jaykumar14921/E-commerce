@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+    <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="../node_modules/bootstrap-icons/font/bootstrap-icons.css">
+
+    <style>
+        body{
+            background-image: url(../public/assets/503.jpg) ;
+            background-repeat: no-repeat;
+            background-size: 100%;
+                }
+
+        #loginContainer{
+            border: 1px solid gray;
+            width: 450px;
+            height: 270px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 150px;
+            border-radius: 10px;
+            /* background-image: linear-gradient( rgb(40, 202, 123), rgb(16, 103, 61)); */
+            opacity: 80%;
+        }
+
+        #loginForm{
+             width: 700px;
+             background-color: white;
+             border-radius: 10px;
+        }
+
+        #loginFormMessage{
+            color: black;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        p{
+            font-size: smaller;
+        }
+
+        a{
+            text-decoration: none;
+            color: white;
+        }
+
+    </style>
+
+</head>
+<body>
+
+
+    <div id="loginContainer" class="container-fluid d-flex">
+        <div id="loginForm" align="center" class="d-block">
+            <form id="login" action="" class="d-block m-3">
+                <h2>Signup</h2>
+                <input type="email" placeholder="Email Address" class="form-control my-3">
+                <input type="password" placeholder="Password" class="form-control my-3">
+                <button class="btn btn-success w-75">signup</button>
+            </form>
+        </div>
+
+        <div id="loginFormMessage" align="center" class="d-block">
+            <h3>Come join us!</h3>
+            <p>
+               We are so excited to have you here. If you haven't already, create an account to get access to exclusive offer, rewads, and discounts.
+            </p>
+             <button class="btn btn-success btn-sm rounded-pill"><a href="../public/login.html">Already have an account? Login</a></button>
+           </div>
+        </div>
+    </div>
+   
+
+      
+
+    
+</body>
+</html>
