@@ -129,16 +129,23 @@ $(function () {
   });
 
 
-  function fetchProducts(page,category='all') {
-    let url = `https://imposterapi-5.onrender.com/data?limit=${limit}&page=${page}`;
-    if (category !== 'all') {
-      url += `&category=${category}`; // Append category to the URL
-    }
+  function fetchProducts(page, category = 'all', subCategory = 'all') {
+  let url = `https://imposterapi-5.onrender.com/data?limit=${limit}&page=${page}`;
+  
+  // Add category filter if not 'all'
+  if (category !== 'all') {
+    url += `&category=${category}`;
+  }
+  
+  // Add subCategory filter if not 'all'
+  if (subCategory !== 'all') {
+    url += `&subCategory=${subCategory}`;
+  }
 
-    $.ajax({
-      method: "GET",
-      url: url,
-    }).then(function (response) {
+  $.ajax({
+    method: "GET",
+    url: url,
+  }).then(function (response) {
       $("#card-group").empty();
       $.each(response, function (key, value) {
         const card = $(`
