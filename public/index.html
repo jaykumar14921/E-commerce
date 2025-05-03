@@ -131,23 +131,24 @@ $(function () {
 
   function fetchProducts(page, category = 'all', subCategory = 'all') {
   let url = `https://imposterapi-5.onrender.com/data?limit=${limit}&page=${page}`;
-  
-  // Add category filter if not 'all'
-  if (category !== 'all') {
-    url += `&category=${category}`;
-  }
-  
-  // Add subCategory filter if not 'all'
-  if (subCategory !== 'all') {
-    url += `&subCategory=${subCategory}`;
-  }
 
   $.ajax({
     method: "GET",
     url: url,
   }).then(function (response) {
-      $("#card-group").empty();
-      $.each(response, function (key, value) {
+    $("#card-group").empty();
+    
+    // Filter products client-side if needed
+    let filteredProducts = response;
+    if (category !== 'all') {
+      filteredProducts = response.filter(product => product.category === category);
+    }
+    if (subCategory !== 'all') {
+      filteredProducts = filteredProducts.filter(product => product.subCategory === subCategory);
+    }
+    
+    // Render filtered products
+    $.each(filteredProducts, function (key, value) {
         const card = $(`
           <div class="card" style="cursor:pointer;">
             <div align="center" class="card-header">
