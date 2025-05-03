@@ -124,7 +124,7 @@ $(function () {
   $("#img-category img").on("click", function () {
     const category = $(this).data("category") || "all";
     const subCategory = $(this).data("sub-category") || "all";
-    currentPage = 1;
+    let currentPage = 1;
     fetchProducts(currentPage, category, subCategory);
   });
 
