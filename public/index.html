@@ -129,26 +129,18 @@ $(function () {
   });
 
 
-  function fetchProducts(page, category = 'all', subCategory = 'all') {
-  let url = `https://imposterapi-5.onrender.com/data?limit=${limit}&page=${page}`;
-
-  $.ajax({
-    method: "GET",
-    url: url,
-  }).then(function (response) {
-    $("#card-group").empty();
-    
-    // Filter products client-side if needed
-    let filteredProducts = response;
+  function fetchProducts(page,category='all') {
+    let url = `https://imposterapi-5.onrender.com/data?limit=${limit}&page=${page}`;
     if (category !== 'all') {
-      filteredProducts = response.filter(product => product.category === category);
+      url += `&category=${category}`; // Append category to the URL
     }
-    if (subCategory !== 'all') {
-      filteredProducts = filteredProducts.filter(product => product.subCategory === subCategory);
-    }
-    
-    // Render filtered products
-    $.each(filteredProducts, function (key, value) {
+
+    $.ajax({
+      method: "GET",
+      url: url,
+    }).then(function (response) {
+      $("#card-group").empty();
+      $.each(response, function (key, value) {
         const card = $(`
           <div class="card" style="cursor:pointer;">
             <div align="center" class="card-header">
@@ -310,7 +302,6 @@ function ShowCartClick(){
       <div class="d-flex">
         <button id="btnLogin" class="btn btn-warning mx-2"><i class="bi bi-person-circle"></i><a href="./login.html">&nbsp;Login</a></button>
         <button onclick="ShowCartClick()" data-bs-target="#cart" data-bs-toggle="modal" class="btn btn-warning mx-2"><i class="bi bi-cart3"></i>&nbsp;Cart
-
             <!-- Count -->
           </span>
           <span id="totalAmount" class="badge bg-success">
