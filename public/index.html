@@ -108,9 +108,9 @@
 <script>
 
 $(function () {
-  // let currentPage = 1;
-  // const limit = 28;
-  // let totalPages = 28; // Initialize totalPages
+  let currentPage = 1;
+  const limit = 28;
+  let totalPages = 28; // Initialize totalPages
 
   // CATEGORY BUTTONS
   $("#btn-category button").on("click", function () {
@@ -130,7 +130,7 @@ $(function () {
 
 
   function fetchProducts(page,category='all') {
-    let url = `https://imposterapi-5.onrender.com/data`;
+    let url = `https://imposterapi-5.onrender.com/data?limit=${limit}&page=${page}`;
     if (category !== 'all') {
       url += `&category=${category}`; // Append category to the URL
     }
