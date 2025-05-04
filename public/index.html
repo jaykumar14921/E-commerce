@@ -152,10 +152,9 @@ $(function () {
             <div class="col">
               <div class="card" style="cursor:pointer;">
                 <div align="center" class="card-header">
-                  
-                </div>
-                <div class="card-body cardBody">
                   <img id="card-img" src="${value.image}" class="card-img-top" alt="${value.title}">
+                </div>
+                <div class="card-body">
                   <p id="title" class="overflow-hidden-text fw-bold">${value.title}</p>
                   <p id="body-text" class="ms-1">Unit: ${value.unit}</p>
                   <p id="body-text" class="ms-1">Type: ${value.type}</p>
@@ -167,7 +166,7 @@ $(function () {
               </div>
             </div>
           `);
-          cardBody.on("click", function () {
+          card.on("click", function () {
             $('#modalImage').attr('src', value.image);
             $('#modalTitle').text(value.title);
             $('#modalUnit').text("Unit: " + value.unit);
