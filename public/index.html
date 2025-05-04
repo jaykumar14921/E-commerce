@@ -152,9 +152,10 @@ $(function () {
             <div class="col">
               <div class="card" style="cursor:pointer;">
                 <div align="center" class="card-header">
-                  <img id="card-img" src="${value.image}" class="card-img-top" alt="${value.title}">
+                  
                 </div>
-                <div class="card-body">
+                <div class="card-body cardBody">
+                  <img id="card-img" src="${value.image}" class="card-img-top" alt="${value.title}">
                   <p id="title" class="overflow-hidden-text fw-bold">${value.title}</p>
                   <p id="body-text" class="ms-1">Unit: ${value.unit}</p>
                   <p id="body-text" class="ms-1">Type: ${value.type}</p>
@@ -166,7 +167,7 @@ $(function () {
               </div>
             </div>
           `);
-          card.on("click", function () {
+          cardBody.on("click", function () {
             $('#modalImage').attr('src', value.image);
             $('#modalTitle').text(value.title);
             $('#modalUnit').text("Unit: " + value.unit);
@@ -267,24 +268,25 @@ $(function () {
 // ... (Your ShowCartClick, cartItems, GetCartItemsCount, AddToCart functions remain the same)
 
 
-function ShowCartClick(){
-  document.querySelector("tbody").innerHTML="";
- // let totalAmount = 0;
-      for(var item of cartItems){
-        var tr=document.createElement("tr");
-        var tdImage=document.createElement("td");
-        var tdTitle=document.createElement("td");
-        var tdQuantity=document.createElement("td");
-        var tdPrice=document.createElement("td");
+function ShowCartClick() {
+    document.querySelector("tbody").innerHTML = "";
+    let totalAmount = 0; // Initialize totalAmount here
 
-        tdTitle.innerHTML=item.title;
-        tdPrice.innerHTML=item.price;
-        tdQuantity.innerHTML=1;
+    for (var item of cartItems) {
+        var tr = document.createElement("tr");
+        var tdImage = document.createElement("td");
+        var tdTitle = document.createElement("td");
+        var tdQuantity = document.createElement("td");
+        var tdPrice = document.createElement("td");
 
-        var img=document.createElement("img");
-        img.src=item.image;
-        img.width="100";
-        img.heigth="100";
+        tdTitle.innerHTML = item.title;
+        tdPrice.innerHTML = item.price;
+        tdQuantity.innerHTML = 1; // Assuming quantity is always 1 for now
+
+        var img = document.createElement("img");
+        img.src = item.image;
+        img.width = "100";
+        img.heigth = "100";
 
         tdImage.appendChild(img);
 
@@ -295,17 +297,22 @@ function ShowCartClick(){
 
         document.querySelector("tbody").appendChild(tr);
 
-        //totalAmount += parseFloat(item.price);
-      }
+        totalAmount += parseFloat(item.price);
+    }
 
-      // Add total row
-  let trTotal = document.createElement("tr");
-  trTotal.innerHTML = `
-    <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
-    <td><strong>₹${totalAmount.toFixed(2)}</strong></td>
-  `;
-  tbody.appendChild(trTotal);
+    // Add total row
+    let trTotal = document.createElement("tr");
+    trTotal.innerHTML = `
+        <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
+        <td><strong>₹${totalAmount.toFixed()}</strong></td>
+    `;
+    let tbody = document.querySelector("tbody");
+    if (tbody) {
+        tbody.appendChild(trTotal);
+    }
 }
+
+
 
 var cartItems=[];
 var count=0;
@@ -318,6 +325,14 @@ function GetCartItemsCount(){
 
 
 function AddToCart(id){
+
+  const alreadyInCart = cartItems.some(item => item.id === id);
+
+if (alreadyInCart) {
+    // alert("This item is already in your cart!");
+    return; 
+}
+
     fetch(`https://imposterapi-5.onrender.com/data/${id}`)
     .then((response)=>{
         return response.json();
