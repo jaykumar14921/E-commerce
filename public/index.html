@@ -222,11 +222,16 @@ $(function () {
   // Initial load of all products using the filtering function with default 'all' category
   fetchProducts();
 
-  $('#productModal').on('click', '.add-to-cart-button', function() {
+  $('.add-to-cart-button').on('click', function() {
     const productId = $(this).data('product-id');
-    console.log("Adding to cart with ID:", productId);
     AddToCart(productId);
   });
+
+  // $('#productModal').on('click', '.add-to-cart-button', function() {
+  //   const productId = $(this).data('product-id');
+  //   console.log("Adding to cart with ID:", productId);
+  //   AddToCart(productId);
+  // });
 
 
   
