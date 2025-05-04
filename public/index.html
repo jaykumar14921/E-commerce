@@ -269,7 +269,7 @@ $(function () {
 
 function ShowCartClick(){
   document.querySelector("tbody").innerHTML="";
-  let totalAmount = 0;
+ // let totalAmount = 0;
       for(var item of cartItems){
         var tr=document.createElement("tr");
         var tdImage=document.createElement("td");
@@ -288,8 +288,6 @@ function ShowCartClick(){
 
         tdImage.appendChild(img);
 
- 
-
         tr.appendChild(tdImage);
         tr.appendChild(tdTitle);
         tr.appendChild(tdQuantity);
@@ -297,7 +295,7 @@ function ShowCartClick(){
 
         document.querySelector("tbody").appendChild(tr);
 
-        totalAmount += parseFloat(item.price);
+        //totalAmount += parseFloat(item.price);
       }
 
       // Add total row
