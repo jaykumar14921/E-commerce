@@ -222,16 +222,13 @@ $(function () {
   // Initial load of all products using the filtering function with default 'all' category
   fetchProducts();
 
-  // $('.add-to-cart-button').on('click', function() {
-  //   const productId = $(this).data('product-id');
-  //   AddToCart(productId);
-  // });
 
-  // $('#productModal').on('click', '.add-to-cart-button', function() {
-  //   const productId = $(this).data('product-id');
-  //   console.log("Adding to cart with ID:", productId);
-  //   AddToCart(productId);
-  // });
+
+  $('#productModal').on('click', '.add-to-cart-button', function() {
+    const productId = $(this).data('product-id');
+    //console.log("Adding to cart with ID:", productId);
+    AddToCart(productId);
+  });
 
 
   
@@ -330,12 +327,12 @@ function GetCartItemsCount(){
 
 function AddToCart(id){
 
-  const alreadyInCart = cartItems.some(item => item.id === id);
+//   const alreadyInCart = cartItems.some(item => item.id === id);
 
-if (alreadyInCart) {
-    // alert("This item is already in your cart!");
-    return; 
-}
+// if (alreadyInCart) {
+//     // alert("This item is already in your cart!");
+//     return; 
+// }
 
     fetch(`https://imposterapi-5.onrender.com/data/${id}`)
     .then((response)=>{
@@ -484,7 +481,7 @@ if (alreadyInCart) {
               <p><strong>Country:</strong> <span id="modalOrigin"></span></p>
               <div class="d-flex">
                 <p><strong>Shelf Life:</strong> <span id="modalShelfLife"></span></p>
-                <button onclick=AddToCart(id) class="btn btn-outline-success add-to-cart-button" style="margin-left: 60%;">Add</button>
+                <button class="btn btn-outline-success add-to-cart-button" style="margin-left: 60%;">Add</button>
               </div>
             </div>
           </div>
