@@ -9,7 +9,7 @@ const app=express();
 PORT=process.env.PORT || 3000;
 
 app.use(session({
-    secret: 'secret',
+    secret: process.env.SESSION_SECRET || '9f3c3e6f92ad4f6a9be9fda6749ae9e1a118d3f3035c3b127221e0ab6db0c2cb',
     resave: false,
     saveUninitialized: true,
 }));
