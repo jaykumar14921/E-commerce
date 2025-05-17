@@ -52,17 +52,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 
 // Google authentication route
-app.get('/login.html/auth/google', passport.authenticate('google', {
+app.get('/auth/google', passport.authenticate('google', {
   scope: ['profile', 'email']
 }));
 
 // Google authentication callback route
-app.get('/login.html/auth/google/callback',
+app.get('/auth/google/callback',
     passport.authenticate('google', {
         failureRedirect: '/', // Redirect to the home page on failure
         // successRedirect: '/profile', // Removed successRedirect here
