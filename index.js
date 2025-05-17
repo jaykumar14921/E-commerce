@@ -55,8 +55,13 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get(
+    "/auth/google",
+    passport.authenticate("google",{scope: ["profile", "email"] })
+);
+
 // Google authentication route
-app.get('/auth/google', passport.authenticate('google'));
+// app.get('/auth/google', passport.authenticate('google'));
 
 // Google authentication callback route
 app.get('/auth/google/callback',
