@@ -57,12 +57,12 @@ app.get('/', (req, res) => {
 
 
 // Google authentication route
-app.get('/auth/google', passport.authenticate('google', {
+app.get('/login.html/auth/google', passport.authenticate('google', {
   scope: ['profile', 'email']
 }));
 
 // Google authentication callback route
-app.get('/auth/google/callback',
+app.get('/login.html/auth/google/callback',
     passport.authenticate('google', {
         failureRedirect: '/', // Redirect to the home page on failure
         // successRedirect: '/profile', // Removed successRedirect here
