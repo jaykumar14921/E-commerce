@@ -47,14 +47,6 @@ passport.deserializeUser((user, done) => {
     done(null, user);
 });
 
-// Serve static files (CSS, JS, images, etc.)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Routes
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 
 // Google authentication route
 app.get('/auth/google', passport.authenticate('google', {
@@ -73,6 +65,18 @@ app.get('/auth/google/callback',
         res.redirect('/profile'); //  moved success redirect here.
     }
 );
+
+
+
+// Serve static files (CSS, JS, images, etc.)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Routes
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+
 
 // Profile route (requires authentication)
 app.get('/profile', (req, res) => {
