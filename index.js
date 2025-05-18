@@ -61,6 +61,8 @@ app.get('/auth/google', passport.authenticate('google', {
   scope: ['profile', 'email']
 }));
 
+
+
 // Google authentication callback route
 app.get('/auth/google/callback',
     passport.authenticate('google', {
@@ -70,6 +72,8 @@ app.get('/auth/google/callback',
     }),
     (req, res) => {
         // Successful authentication, redirect to profile or another page
+        console.log("Successfully hit /auth/google/callback and authenticated!"); // Add this log
+        console.log("User:", req.user); // Log the user
         res.redirect('/profile'); //  moved success redirect here.
     }
 );
