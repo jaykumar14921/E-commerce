@@ -5,6 +5,7 @@ const passport = require('passport');
 const session = require('express-session');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const path = require('path'); // For handling file paths
+const MongoStore = require('connect-mongo');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,10 @@ app.use(session({
     secret: process.env.SESSION_SECRET || '9f3c3e6f92ad4f6a9be9fda6749ae9e1a118d3f3035c3b127221e0ab6db0c2cb',
     resave: false,
     saveUninitialized: true,
+    store: MongoStore.create({         // 3. Configure MongoStore
+        mongoUrl: process.env.MONGO_URI, // Your MongoDB connection string in .env
+        collectionName: 'sessions'
+    }),
     cookie: { // Added secure and sameSite attributes for production
         secure: process.env.NODE_ENV === 'production',  // Set to true in production
         sameSite: 'lax', // Or 'strict', depending on your needs
