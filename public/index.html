@@ -103,6 +103,87 @@
           text-decoration: none;
           color: black;
         }
+
+        @media  (max-width: 400px){
+
+          #manImg{
+            display: none;
+          }
+
+          #img-category img {
+            width: 180px;
+            height: 120px;
+          }
+
+          #img-category{
+            display: flex;
+            flex-wrap: wrap !important;
+            justify-content: space-evenly;
+          }
+
+          .card-header{
+            height: 60px;
+            width: 90px;
+            margin-bottom: 4%;
+          }
+
+          .card-body{
+            height: 40%;
+            width: 100px;
+          }
+
+          .card-footer{
+            height: 60px;
+            width: 100px;
+            display: flex;
+            justify-content: space-around;
+          }
+
+          .card{
+            height: 200px;
+            width: 105px;
+            margin-left: 0px;
+            margin-right: 0px;
+          }
+
+          .type{
+            display: none;
+          }
+
+          #card-img{
+            height: 80px;
+            width: 70px;
+          }
+          
+          #addbtn{
+            height: 30px;
+            width: 51px;
+            font-size: small;
+            margin-left: 6px;
+          }
+
+          #btnLogin{
+            display: flex;
+            font-size: small;
+            height: 40px;
+          }
+          
+          #btnCart{
+            display: block;
+            font-size: small;
+            height: 40px;
+          }
+
+          #card-group{
+            margin-top: 60%;
+          }
+
+          #category{
+            display: flex;
+            font-size: medium;
+          }
+
+        }
       </style>
 
      <!-- <script src="../node_modules/jquery/dist/jquery.js"></script> -->
@@ -158,11 +239,11 @@ $(function () {
                 <div class="card-body">
                   <p id="title" class="overflow-hidden-text fw-bold">${value.title}</p>
                   <p id="body-text" class="ms-1">Unit: ${value.unit}</p>
-                  <p id="body-text" class="ms-1">Type: ${value.type}</p>
+                  <p class="type" id="body-text" class="ms-1">Type: ${value.type}</p>
                 </div>
                 <div class="card-footer d-flex justify-content-between align-items-center">
                   <span>&#8377;&nbsp;${value.price}</span>
-                  <button onclick="AddToCart(${value.id})" class="btn btn-outline-success">Add</button>
+                  <button id="addbtn" onclick="AddToCart(${value.id})" class="btn btn-outline-success">Add</button>
                 </div>
               </div>
             </div>
@@ -359,7 +440,7 @@ function AddToCart(id){
           <h2>GroceryBucket</h2>
           <div class="d-flex">
             <button id="btnLogin" class="btn btn-warning mx-2"><i class="bi bi-person-circle"></i><a href="./login.html">&nbsp;Login</a></button>
-            <button onclick="ShowCartClick()" data-bs-target="#cart" data-bs-toggle="modal" class="btn btn-warning mx-2"><i class="bi bi-cart3"></i>&nbsp;Cart
+            <button id="btnCart" onclick="ShowCartClick()" data-bs-target="#cart" data-bs-toggle="modal" class="btn btn-warning mx-2"><i class="bi bi-cart3"></i>&nbsp;Cart
     
                 <!-- Count -->
               </span>
@@ -384,11 +465,11 @@ function AddToCart(id){
               <button class="btn btn-warning"><i class="bi bi-search"></i></button>
             </div>
             <p class="mb-0" style="color: rgba(255, 255, 255, 0.516); font-size: smaller;">Not yet Member?<a id="btn-signup" href="./signup.html">&nbsp;sign up&nbsp;</a>now</p>
-            <img src="/assets/4-removebg-preview.png" class="ms-5 mt-0" width="220px" height="250px" title="Hello">
+            <img src="../public/assets/4-removebg-preview.png" class="ms-5 mt-0" width="220px" height="250px" title="Hello">
           </div>
     
           <div class="mt-5">
-            <img src="/assets/grocery-banner-img.png" width="450px" alt="">
+            <img id="manImg" src="../public/assets/grocery-banner-img.png" width="450px" alt="">
           </div>
         </div>
     
@@ -407,12 +488,12 @@ function AddToCart(id){
         
     
         <div align="center" id="img-category">
-          <img src="/assets/AdobeStock_314327563_Preview.jpeg" data-category="fruit_veges" width="350px" height="180px" alt="" />
-          <img src="/assets/AdobeStock_335853623_Preview.jpeg" data-category="fruit_veges" data-sub-category="vegetable" width="350px" height="180px" alt="" />
-          <img src="/assets/download.webp" data-category="instant_food" data-sub-category="veg_snack" width="350px" height="180px" alt="" />
+          <img src="../public/assets/AdobeStock_314327563_Preview.jpeg" data-category="fruit_veges" width="350px" height="180px" alt="" />
+          <img src="../public/assets/AdobeStock_335853623_Preview.jpeg" data-category="fruit_veges" data-sub-category="vegetable" width="350px" height="180px" alt="" />
+          <img src="../public/assets/download.webp" data-category="instant_food" data-sub-category="veg_snack" width="350px" height="180px" alt="" />
         </div>
 
-        <div class="row">
+        <div id="category" class="row">
             <div class="col-2">
               <h2 class="position-sticky top-0">Select a Category</h2>
               <select id="lstOption" class="form-select dropdown m-3 position-sticky top-0">
