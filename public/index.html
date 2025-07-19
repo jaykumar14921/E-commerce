@@ -180,7 +180,16 @@
 
           #category{
             display: flex;
+            font-size: larger;
+            position: sticky;
+            top: 70px;
+          }
+
+          #lstOption{
+            display: flex;
             font-size: medium;
+            position: sticky;
+            top: 120px;
           }
 
         }
@@ -465,11 +474,11 @@ function AddToCart(id){
               <button class="btn btn-warning"><i class="bi bi-search"></i></button>
             </div>
             <p class="mb-0" style="color: rgba(255, 255, 255, 0.516); font-size: smaller;">Not yet Member?<a id="btn-signup" href="./signup.html">&nbsp;sign up&nbsp;</a>now</p>
-            <img src="../public/assets/4-removebg-preview.png" class="ms-5 mt-0" width="220px" height="250px" title="Hello">
+            <img src="assets/4-removebg-preview.png" class="ms-5 mt-0" width="220px" height="250px" title="Hello">
           </div>
     
           <div class="mt-5">
-            <img id="manImg" src="../public/assets/grocery-banner-img.png" width="450px" alt="">
+            <img id="manImg" src="assets/grocery-banner-img.png" width="450px" alt="">
           </div>
         </div>
     
@@ -488,15 +497,15 @@ function AddToCart(id){
         
     
         <div align="center" id="img-category">
-          <img src="../public/assets/AdobeStock_314327563_Preview.jpeg" data-category="fruit_veges" width="350px" height="180px" alt="" />
-          <img src="../public/assets/AdobeStock_335853623_Preview.jpeg" data-category="fruit_veges" data-sub-category="vegetable" width="350px" height="180px" alt="" />
-          <img src="../public/assets/download.webp" data-category="instant_food" data-sub-category="veg_snack" width="350px" height="180px" alt="" />
+          <img src="assets/AdobeStock_314327563_Preview.jpeg" data-category="fruit_veges" width="350px" height="180px" alt="" />
+          <img src="assets/AdobeStock_335853623_Preview.jpeg" data-category="fruit_veges" data-sub-category="vegetable" width="350px" height="180px" alt="" />
+          <img src="assets/download.webp" data-category="instant_food" data-sub-category="veg_snack" width="350px" height="180px" alt="" />
         </div>
 
-        <div id="category" class="row">
+        <div class="row">
             <div class="col-2">
-              <h2 class="position-sticky top-0">Select a Category</h2>
-              <select id="lstOption" class="form-select dropdown m-3 position-sticky top-0">
+              <h2  id="category">Select a Category</h2>
+              <select id="lstOption" class="form-select dropdown m-3">
                 <option selected value="all">All</option>
                 <option value="atta_rice">Atta&Rice</option>
                 <option value="fruit_veges">Fruits&Vegetables</option>
