@@ -7,9 +7,6 @@
     <link rel="shortcut icon" href="assets/favIcon.png" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.css">
-    <link rel="stylesheet" href="../node_modules/bootstrap-icons/font/bootstrap-icons.css">
-  -->
     <style>
         body {
           background: linear-gradient(to right, rgb(2, 39, 32), 55%, rgb(11, 109, 59) 80%);
@@ -87,6 +84,7 @@
     
         .overflow-hidden-text {
           display: -webkit-box;
+          line-clamp: 2;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
@@ -104,16 +102,40 @@
           color: black;
         }
 
-        @media  (max-width: 700px){
+        /* ADDED: Loading and error message styles */
+        .loading-spinner {
+          display: none;
+          text-align: center;
+          padding: 40px;
+        }
 
+        .error-message {
+          display: none;
+          background-color: #f8d7da;
+          color: #721c24;
+          padding: 15px;
+          border-radius: 5px;
+          margin: 20px;
+          text-align: center;
+        }
+
+        /* ADDED: Quantity button styles */
+        .qty-btn {
+          width: 30px;
+          height: 30px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        @media  (max-width: 700px){
           #manImg{
             display: none;
           }
         }
 
-
         @media  (max-width: 400px){
-
           #manImg{
             display: none;
           }
@@ -186,39 +208,62 @@
             margin-top: 60%;
           }
 
-          #category{
-            display: flex;
-            font-size: larger;
-            position: sticky;
-            top: 70px;
-          }
-
-          #lstOption{
-            display: flex;
-            font-size: medium;
-            position: sticky;
-            top: 120px;
-          }
-
         }
+#category, #lstOption {
+    position: -webkit-sticky; /* Support for Safari */
+    position: sticky;         /* The standard property */
+    z-index: 100;
+}
+
+#category {
+    top: 90px; /* Sticks when it hits 90px from the top of the window */
+    background: transparent;
+}
+
+
+#lstOption {
+    top: 140px; /* Adjust this value based on the height of your H2 title */
+}
+        
       </style>
 
-     <!-- <script src="../node_modules/jquery/dist/jquery.js"></script> -->
      <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
     <script>
 
+// Configuration
+const API_BASE_URL = 'https://imposterapi-5.onrender.com/data';
+
+// Utility function to escape HTML and prevent XSS
+function escapeHtml(text) {
+  if (!text) return '';
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.toString().replace(/[&<>"']/g, m => map[m]);
+}
 
 $(function () {
 
   let currentPage = 1;
   const limit = 28;
-  let totalPages = 28; // Initialize totalPages
-  let allProducts = []; // Store all fetched products
+  let totalPages = 1; // FIXED: Changed from 28 to 1
+  let allProducts = [];
+  
+  // FIXED: Track current category and subCategory for pagination
+  let currentCategory = 'all';
+  let currentSubCategory = 'all';
 
   function fetchProducts(page = 1, category = 'all', subCategory = 'all') {
-    let url = `https://imposterapi-5.onrender.com/data`;
+    // FIXED: Save current category and subCategory for pagination
+    currentCategory = category;
+    currentSubCategory = subCategory;
     
-    // const queryParams = [];
+    let url = `${API_BASE_URL}`;
+    
     if (category !== 'all') {
       url += `/category/${category}`;
       if (subCategory !== 'all') {
@@ -226,51 +271,55 @@ $(function () {
       }
     }
 
-  //   if (category !== 'all') {
-  //   queryParams.push(`category=${category}`); // Creates "category=dairy_breakfast"
-  // }
-  // if (subCategory !== 'all') {
-  //   queryParams.push(`sub-category=${subCategory}`); // Creates "sub-category=bread"
-  // }
-
-
-  //   if (queryParams.length > 0) {
-  //   url += '&' + queryParams.join('&');
-  // }
-
-    console.log(`Fetching page ${page}, category: ${category}, subCategory: ${subCategory}`); // Add this for debugging    
+    // FIXED: Show loading spinner
+    $('#loading-spinner').show();
+    $('#error-message').hide();
+    $('#card-group').hide();
 
     $.ajax({
       url: url,
       method: 'GET',
       dataType: 'json',
-      success: function(response) {//mod
-        $('#card-group').empty(); // Clear previous cards
-        response.forEach(function(value) {
+      success: function(response) {
+        if (Array.isArray(response)) {
+          allProducts = response;
+          totalPages = Math.ceil(allProducts.length / limit);
+        } else {
+          allProducts = response.data || [];
+          totalPages = response.totalPages || 1;
+        }
+        
+        // Slice for current page
+        const start = (page - 1) * limit;
+        const end = start + limit;
+        const pageProducts = allProducts.slice(start, end);
+        
+        $('#card-group').empty();
+        pageProducts.forEach(function(value) {
           const card = $(`
             <div class="col">
               <div class="card" style="cursor:pointer;">
                 <div align="center" class="card-header">
-                  <img id="card-img" src="${value.image}" class="card-img-top" alt="${value.title}">
+                  <img id="card-img" src="${escapeHtml(value.image)}" class="card-img-top" alt="${escapeHtml(value.title)}">
                 </div>
                 <div class="card-body">
-                  <p id="title" class="overflow-hidden-text fw-bold">${value.title}</p>
-                  <p id="body-text" class="ms-1">Unit: ${value.unit}</p>
-                  <p class="type" id="body-text" class="ms-1">Type: ${value.type}</p>
+                  <p id="title" class="overflow-hidden-text fw-bold">${escapeHtml(value.title)}</p>
+                  <p id="body-text" class="ms-1">Unit: ${escapeHtml(value.unit)}</p>
+                  <p class="type" id="body-text">Type: ${escapeHtml(value.type)}</p>
                 </div>
                 <div class="card-footer d-flex justify-content-between align-items-center">
-                  <span>&#8377;&nbsp;${value.price}</span>
+                  <span>&#8377;&nbsp;${escapeHtml(value.price)}</span>
                   <button id="addbtn" onclick="AddToCart(${value.id})" class="btn btn-outline-success">Add</button>
                 </div>
               </div>
             </div>
           `);
           card.on("click", function () {
-            $('#modalImage').attr('src', value.image);
+            $('#modalImage').attr('src', escapeHtml(value.image));
             $('#modalTitle').text(value.title);
             $('#modalUnit').text("Unit: " + value.unit);
             $('#modalType').text("Type: " + value.type);
-            $('#modalPrice').html("&#8377; " + value.price);
+            $('#modalPrice').text("₹ " + value.price); // FIXED: Changed to .text() for consistency
             $('#modalDescription').text(value.description);
             $('#modalFSSAI').text(value.fssaiLicense);
             $('#modalOrigin').text(value.countryOfOrigin);
@@ -282,15 +331,22 @@ $(function () {
           $('#card-group').append(card);
         });
 
-          totalPages = response.totalPages;
-      updatePaginationButtons();
-      currentPage = page;
+        totalPages = response.totalPages || totalPages;
+        currentPage = page; // FIXED: Update currentPage BEFORE updatePaginationButtons
+        updatePaginationButtons();
 
-      $("#card-group")[0].scrollIntoView();//TO LOAD PRODUCTS FROM TOP AFTER PAGE CHANGE
+        // FIXED: Hide loading spinner and show content
+        $('#loading-spinner').hide();
+        $('#card-group').show();
+
+        $("#card-group")[0].scrollIntoView();
         
       },
       error: function(xhr, status, error) {
         console.error("Error fetching data:", error);
+        // FIXED: Show user-visible error message
+        $('#loading-spinner').hide();
+        $('#error-message').text('Failed to load products. Please try again later.').show();
       }
     });
   }
@@ -315,62 +371,62 @@ $(function () {
   $("#lstOption").on("change", function() {
     const selectedCategory = $(this).val();
     currentPage = 1;
-    fetchProducts(currentPage, selectedCategory, 'all'); // Reset sub-category for dropdown
+    fetchProducts(currentPage, selectedCategory, 'all');
   });
 
-  // Initial load of all products using the filtering function with default 'all' category
+  // Initial load
   fetchProducts();
-
-
 
   $('#productModal').on('click', '.add-to-cart-button', function() {
     const productId = $(this).data('product-id');
-    //console.log("Adding to cart with ID:", productId);
     AddToCart(productId);
   });
 
-
   
   function updatePaginationButtons() {
+    // Clear existing page buttons except prev and next
+    $(".pagination .page-item:not(:first-child):not(:last-child)").remove();
+
+    // Add page buttons
+    for (let i = 1; i <= totalPages; i++) {
+      const pageItem = $(`<li class="page-item"><a class="page-link" href="#">${i}</a></li>`);
+      $(".pagination .page-item:last-child").before(pageItem);
+    }
+
+    // Set active and disabled
     $(".pagination .page-item").removeClass("active disabled");
-    $(".pagination .page-item:nth-child(" + (currentPage + 1) + ")").addClass("active"); // +1 because of the 'Previous' button
+    $(".pagination .page-item:nth-child(" + (currentPage + 1) + ")").addClass("active");
 
     $("#prevPage").toggleClass("disabled", currentPage === 1);
     $("#nextPage").toggleClass("disabled", currentPage === totalPages);
   }
-
-
 
   // Event listeners for pagination links
   $(".pagination").on("click", ".page-item a", function (e) {
     e.preventDefault();
     const clickedPage = $(this).text();
     if (!isNaN(clickedPage)) {
-      fetchProducts(parseInt(clickedPage));
+      // FIXED: Pass current category and subCategory to maintain filter
+      fetchProducts(parseInt(clickedPage), currentCategory, currentSubCategory);
     } else if ($(this).attr("aria-label") === "Previous" && currentPage > 1) {
-      fetchProducts(currentPage - 1);
+      // FIXED: Pass current category and subCategory to maintain filter
+      fetchProducts(currentPage - 1, currentCategory, currentSubCategory);
     } else if ($(this).attr("aria-label") === "Next" && currentPage < totalPages) {
-      fetchProducts(currentPage + 1);
+      // FIXED: Pass current category and subCategory to maintain filter
+      fetchProducts(currentPage + 1, currentCategory, currentSubCategory);
     }
   });
 
-  // // Initial fetch
-  // fetchProducts(currentPage);
-
-  // Add IDs to the 'Previous' and 'Next' buttons for easier targeting
+  // Add IDs to the 'Previous' and 'Next' buttons
   $(".pagination .page-item:first-child a").attr("id", "prevPage");
   $(".pagination .page-item:last-child a").attr("id", "nextPage");
 
 });
 
 
-
-// ... (Your ShowCartClick, cartItems, GetCartItemsCount, AddToCart functions remain the same)
-
-
 function ShowCartClick() {
     document.querySelector("tbody").innerHTML = "";
-    let totalAmount = 0; // Initialize totalAmount here
+    let totalAmount = 0;
 
     for (var item of cartItems) {
         var tr = document.createElement("tr");
@@ -378,15 +434,34 @@ function ShowCartClick() {
         var tdTitle = document.createElement("td");
         var tdQuantity = document.createElement("td");
         var tdPrice = document.createElement("td");
+        var tdActions = document.createElement("td");
 
         tdTitle.innerHTML = item.title;
-        tdPrice.innerHTML = item.price;
-        tdQuantity.innerHTML = 1; // Assuming quantity is always 1 for now
+        
+        // FIXED: Show total price for this item (price × quantity)
+        const itemTotal = parseFloat(item.price) * item.quantity;
+        tdPrice.innerHTML = `₹${itemTotal.toFixed(2)}`;
+        
+        // FIXED: Create quantity controls with +/- buttons
+        tdQuantity.innerHTML = `
+            <div class="d-flex align-items-center justify-content-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary qty-btn" onclick="decrementQuantity(${item.id})">-</button>
+                <span class="fw-bold">${item.quantity}</span>
+                <button class="btn btn-sm btn-outline-secondary qty-btn" onclick="incrementQuantity(${item.id})">+</button>
+            </div>
+        `;
+        
+        // FIXED: Add remove button
+        tdActions.innerHTML = `
+            <button class="btn btn-sm btn-danger" onclick="removeFromCart(${item.id})">
+                <i class="bi bi-trash"></i>
+            </button>
+        `;
 
         var img = document.createElement("img");
         img.src = item.image;
         img.width = "100";
-        img.heigth = "100";
+        img.height = "100";
 
         tdImage.appendChild(img);
 
@@ -394,17 +469,18 @@ function ShowCartClick() {
         tr.appendChild(tdTitle);
         tr.appendChild(tdQuantity);
         tr.appendChild(tdPrice);
+        tr.appendChild(tdActions);
 
         document.querySelector("tbody").appendChild(tr);
 
-        totalAmount += parseFloat(item.price);
+        totalAmount += itemTotal;
     }
 
     // Add total row
     let trTotal = document.createElement("tr");
     trTotal.innerHTML = `
-        <td colspan="3" style="text-align: right;"><strong>Total:</strong></td>
-        <td><strong>₹${totalAmount.toFixed()}</strong></td>
+        <td colspan="4" style="text-align: right;"><strong>Total:</strong></td>
+        <td><strong>₹${totalAmount.toFixed(2)}</strong></td>
     `;
     let tbody = document.querySelector("tbody");
     if (tbody) {
@@ -412,41 +488,226 @@ function ShowCartClick() {
     }
 }
 
+// FIXED: Function to increment quantity
+function incrementQuantity(id) {
+    const item = cartItems.find(item => item.id === id);
+    if (item) {
+        item.quantity += 1;
+        GetCartItemsCount();
+        ShowCartClick(); // Refresh cart display
+    }
+}
+
+// FIXED: Function to decrement quantity
+function decrementQuantity(id) {
+    const item = cartItems.find(item => item.id === id);
+    if (item) {
+        if (item.quantity > 1) {
+            item.quantity -= 1;
+            GetCartItemsCount();
+            ShowCartClick(); // Refresh cart display
+        } else {
+            // If quantity is 1, remove the item
+            removeFromCart(id);
+        }
+    }
+}
+
+// FIXED: Function to remove item from cart
+function removeFromCart(id) {
+    const index = cartItems.findIndex(item => item.id === id);
+    if (index !== -1) {
+        cartItems.splice(index, 1);
+        GetCartItemsCount();
+        ShowCartClick(); // Refresh cart display
+        showToast("Item removed from cart");
+    }
+}
 
 
-var cartItems=[];
-var count=0;
+var cartItems = [];
+var count = 0;
 
 function GetCartItemsCount(){
-  count=cartItems.length;
-  let total = cartItems.reduce((sum, item) => sum + parseFloat(item.price), 0);
-  document.getElementById("totalAmount").innerHTML= ` ₹${total} X ${count}`;
+  count = cartItems.reduce((sum, item) => sum + item.quantity, 0); // FIXED: Sum quantities
+  let total = cartItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0); // FIXED: Multiply by quantity
+  document.getElementById("totalAmount").innerHTML = ` ₹${total.toFixed(2)} X ${count}`;
 }
 
 
 function AddToCart(id){
+    // Check if item already exists in cart
+    const existingItem = cartItems.find(item => item.id === id);
+    
+    if (existingItem) {
+        // FIXED: Instead of blocking, increment quantity
+        existingItem.quantity += 1;
+        GetCartItemsCount();
+        showToast("Item quantity increased!");
+        return; 
+    }
 
-//   const alreadyInCart = cartItems.some(item => item.id === id);
-
-// if (alreadyInCart) {
-//     // alert("This item is already in your cart!");
-//     return; 
-// }
-
-    fetch(`https://imposterapi-5.onrender.com/data/${id}`)
-    .then((response)=>{
+    fetch(`${API_BASE_URL}/${id}`)
+    .then((response) => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         return response.json();
     })
-    .then((data)=>{
+    .then((data) => {
+        // FIXED: Add quantity property to new items
+        data.quantity = 1;
         cartItems.push(data);
-        // alert("Item Added To Cart");
         GetCartItemsCount();
+        // FIXED: Show success feedback to user
+        showToast("Item added to cart!");
     })
+    .catch((error) => {
+        console.error("Error adding item to cart:", error);
+        // FIXED: Show error to user
+        alert("Failed to add item to cart. Please try again.");
+    });
 }
 
-   
+// FIXED: Added toast notification function
+function showToast(message) {
+    const toast = $(`
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+            <div class="toast show" role="alert">
+                <div class="toast-header">
+                    <strong class="me-auto">Success</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        </div>
+    `);
+    $('body').append(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
 
+// ==================== RAZORPAY PAYMENT INTEGRATION ====================
 
+// Handle checkout button click
+async function handleCheckout() {
+    // Check if cart is empty
+    if (cartItems.length === 0) {
+        alert('Your cart is empty!');
+        return;
+    }
+
+    // Calculate total amount
+    const totalAmount = cartItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+
+    try {
+        // Step 1: Create order on backend
+        const orderResponse = await fetch('/api/razorpay/create-order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                amount: totalAmount,
+                currency: 'INR',
+                receipt: `order_${Date.now()}`
+            })
+        });
+
+        const orderData = await orderResponse.json();
+
+        if (!orderData.success) {
+            throw new Error(orderData.error || 'Failed to create order');
+        }
+
+        // Step 2: Get Razorpay key
+        const keyResponse = await fetch('/api/razorpay/key');
+        const keyData = await keyResponse.json();
+
+        // Step 3: Initialize Razorpay payment
+        const options = {
+            key: keyData.key,
+            amount: orderData.order.amount,
+            currency: orderData.order.currency,
+            name: 'GroceryBucket',
+            description: 'Grocery Items Purchase',
+            order_id: orderData.order.id,
+            handler: async function (response) {
+                // Payment successful, verify on backend
+                await verifyPayment(response);
+            },
+            prefill: {
+                name: 'Customer Name',
+                email: 'customer@example.com',
+                contact: '9999999999'
+            },
+            theme: {
+                color: '#ffc107'
+            },
+            modal: {
+                ondismiss: function() {
+                    console.log('Payment cancelled by user');
+                }
+            }
+        };
+
+        const razorpay = new Razorpay(options);
+        razorpay.open();
+
+    } catch (error) {
+        console.error('Checkout error:', error);
+        alert('Failed to initiate payment. Please try again.');
+    }
+}
+
+// Verify payment on backend
+async function verifyPayment(response) {
+    try {
+        const verifyResponse = await fetch('/api/razorpay/verify-payment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+            })
+        });
+
+        const verifyData = await verifyResponse.json();
+
+        if (verifyData.success) {
+            // Payment verified successfully
+            showToast('Payment successful! Order placed.');
+            
+            // Clear the cart
+            cartItems = [];
+            GetCartItemsCount();
+            
+            // Close the cart modal
+            const cartModal = bootstrap.Modal.getInstance(document.getElementById('cart'));
+            if (cartModal) {
+                cartModal.hide();
+            }
+
+            // Show success message
+            setTimeout(() => {
+                alert(`Payment Successful!\nPayment ID: ${verifyData.payment_id}\nOrder ID: ${verifyData.order_id}`);
+            }, 500);
+
+        } else {
+            throw new Error(verifyData.error || 'Payment verification failed');
+        }
+
+    } catch (error) {
+        console.error('Payment verification error:', error);
+        alert('Payment verification failed. Please contact support with your payment details.');
+    }
+}
+
+// ========================================================
 
     </script>
 </head>
@@ -454,22 +715,19 @@ function AddToCart(id){
 
     <header>
         <div class="d-flex justify-content-between align-items-center p-3">
-          <h2>GroceryBucket</h2>
+          <h2><img class="p-0 m-0" src="/assets/cartIcon.png" width="70px" alt="">GroceryBucket</h2>
           <div class="d-flex">
             <button id="btnLogin" class="btn btn-warning mx-2"><i class="bi bi-person-circle"></i><a href="./login.html">&nbsp;Login</a></button>
             <button id="btnCart" onclick="ShowCartClick()" data-bs-target="#cart" data-bs-toggle="modal" class="btn btn-warning mx-2"><i class="bi bi-cart3"></i>&nbsp;Cart
-    
-                <!-- Count -->
               </span>
               <span id="totalAmount" class="badge bg-success">
-                <!-- totalAmount -->
               </span>
             </button>
           </div>
         </div>
     </header>
 
-    <section>
+    <section class="container-fluid">
         <div class="d-flex justify-content-around">
           <div id="lp-div1">
             <div align="center" style="color: white; border-radius: 20px; background-color: rgba(255, 255, 255, 0.075); width: 200px; font-size: small;"><i class="bi bi-truck"></i>&nbsp;&nbsp;Fastest Grocery Delivery</div>
@@ -486,7 +744,7 @@ function AddToCart(id){
           </div>
     
           <div class="mt-5">
-            <img id="manImg" src="assets/grocery-banner-img.png" width="450px" alt="">
+            <img id="manImg" src="assets/grocery-banner-img.png" width="450px" alt="Grocery shopping banner">
           </div>
         </div>
     
@@ -505,14 +763,14 @@ function AddToCart(id){
         
     
         <div align="center" id="img-category">
-          <img src="assets/AdobeStock_314327563_Preview.jpeg" data-category="fruit_veges" width="350px" height="180px" alt="" />
-          <img src="assets/AdobeStock_335853623_Preview.jpeg" data-category="fruit_veges" data-sub-category="vegetable" width="350px" height="180px" alt="" />
-          <img src="assets/download.webp" data-category="instant_food" data-sub-category="veg_snack" width="350px" height="180px" alt="" />
+          <img src="assets/AdobeStock_314327563_Preview.jpeg" data-category="fruit_veges" width="350px" height="180px" alt="Fresh fruits category" />
+          <img src="assets/AdobeStock_335853623_Preview.jpeg" data-category="fruit_veges" data-sub-category="vegetable" width="350px" height="180px" alt="Fresh vegetables category" />
+          <img src="assets/download.webp" data-category="instant_food" data-sub-category="veg_snack" width="350px" height="180px" alt="Instant food snacks category" />
         </div>
 
         <div class="row">
-            <div class="col-2">
-              <h2  id="category">Select a Category</h2>
+            <div class="col-md-2 d-none d-md-block">
+              <h2 align="center" id="category">Category</h2>
               <select id="lstOption" class="form-select dropdown m-3">
                 <option selected value="all">All</option>
                 <option value="atta_rice">Atta&Rice</option>
@@ -525,7 +783,18 @@ function AddToCart(id){
               </select>
             </div>
       
-            <div align="center" class="col-8">
+            <div align="center" class="col-12 col-md-8">
+
+              <!-- FIXED: Added loading spinner -->
+              <div id="loading-spinner" class="loading-spinner">
+                <div class="spinner-border text-warning" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Loading products...</p>
+              </div>
+
+              <!-- FIXED: Added error message -->
+              <div id="error-message" class="error-message"></div>
 
               <div id="card-group">
                 <!-- Product cards will be injected here -->
@@ -539,9 +808,7 @@ function AddToCart(id){
                         <span aria-hidden="true">&laquo;</span>
                       </a>
                     </li>
-                    <li class="page-item"><a class="page-link" href="#">1</a></li>
-                    <li class="page-item"><a class="page-link" href="#">2</a></li>
-                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                    <!-- FIXED: Removed hardcoded page numbers 1, 2, 3 - JS will generate them -->
                     <li class="page-item">
                       <a class="page-link" href="#" aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
@@ -557,7 +824,7 @@ function AddToCart(id){
             </div>
         </div>
 
-        </section>
+    </section>
 
     <!-- Product Modal -->
     <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
@@ -569,7 +836,7 @@ function AddToCart(id){
             </div>
             <div class="modal-body">
               <div align="center">
-                <img id="modalImage" width="300px" height="300px" class="img-fluid mb-2" />
+                <img id="modalImage" width="300px" height="300px" class="img-fluid mb-2" alt="Product image" />
               </div>
               <h5 id="modalTitle"></h5>
               <p id="modalUnit"></p>
@@ -585,38 +852,42 @@ function AddToCart(id){
             </div>
           </div>
         </div>
-      </div>
-
-
-          <!-- CART MODAL -->
-  <div class="modal fade" id="cart">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>Your Cart</h3>
-          <button class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-            <table class="table table-hover">
-              <thead>
-                <tr>
-                  <th>Image</th>
-                  <th>Title</th>
-                  <th>Quantity</th>
-                  <th>Price</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-        </div>
-        <div class="modal-footer">
-             <button class="btn btn-warning">Check Out</button>
-        </div>
-      </div>
     </div>
-  
+
+    <!-- CART MODAL -->
+    <div class="modal fade" id="cart">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Your Cart</h3>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Title</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+          </div>
+          <div class="modal-footer">
+               <button class="btn btn-warning" onclick="handleCheckout()">Check Out</button>
+          </div>
+        </div>
+      </div>
+    </div> <!-- FIXED: Added missing closing div tag for modal -->
+
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <!-- FIXED: Removed duplicate bootstrap.min.js, kept only bundle version -->
+    <!-- FIXED: Moved scripts inside body tag -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js" integrity="sha384-VQqxDN0EQCkWoxt/0vsQvZswzTHUVOImccYmSyhJTp7kGtPed0Qcx8rK9h9YEgx+" crossorigin="anonymous"></script>
-    <!-- <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>  -->
 </body>
 </html>
