@@ -40,6 +40,9 @@ if (!process.env.MONGO_URI) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// ✅ ADDED: Trust proxy for Render.com
+app.set('trust proxy', 1);
+
 // FIXED: Better MongoDB store initialization
 let sessionStore;
 if (process.env.MONGO_URI) {
@@ -71,17 +74,19 @@ if (process.env.MONGO_URI) {
 
 // Session configuration
 app.use(session({
-    secret: process.env.SESSION_SECRET, // FIXED: No fallback - must be set
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false, // FIXED: Changed to false for better security
+    saveUninitialized: false,
     store: sessionStore,
     cookie: {
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',  // ✅ CHANGED
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    }
+        maxAge: 24 * 60 * 60 * 1000,
+    },
+    proxy: true  // ✅ ADDED
 }));
+
 
 // Passport initialization
 app.use(passport.initialize());
